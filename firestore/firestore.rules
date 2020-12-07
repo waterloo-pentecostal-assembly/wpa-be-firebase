@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	// Default catch-all rule if all else fails. 
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // IMPORTANT: write is a combination of create, update, delete
+    
+    match /bible_series/{document=**} {
+    	allow write: if false;
+      allow read: if request.auth != null;
+    }
+    
+    match /media/{mediaId} {
+    	allow write: if false;
+      allow read: if request.auth != null;
+    }
+    
+    match /completions/{document=**} {
+    	allow create: if request.auth.uid == request.resource.data.user_id;
+      allow update, delete: if request.auth.uid == resource.data.user_id;
+      allow read: if request.auth != null;
+    }
+        
+    match /prayer_requests/{requestId} {
+    	allow create: if request.auth.uid == request.resource.data.user_id;
+      allow delete, update: if request.auth.uid == resource.data.user_id;
+      allow read: if request.auth != null;
+    }
+
+    match /notifications/{notificationId} {
+    	allow write: if false;
+      allow read: if request.auth.uid == resource.data.user_id;
+    }
+    
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth.uid == userId;
+    }
+    
+    match /achievements/{userId} {
+    	allow write: if false;
+      allow read: if request.auth.uid == userId;
+    }
+  }
+}
