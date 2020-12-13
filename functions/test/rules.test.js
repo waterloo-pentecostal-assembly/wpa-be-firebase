@@ -1,6 +1,6 @@
 const firebase = require("@firebase/rules-unit-testing");
 
-const MY_PROJECT_ID = 'wpa-app-test';
+const TEST_PROJECT_ID = 'test-wpa-be-app';
 const myId = 'user_abc';
 const myEmail = 'user_abc@mail.com';
 const theirId = 'user_xyz';
@@ -10,15 +10,15 @@ const myAuth = {
 };
 
 getTestFirestore = (auth) => {
-    return firebase.initializeTestApp({ projectId: MY_PROJECT_ID, auth: auth }).firestore();
+    return firebase.initializeTestApp({ projectId: TEST_PROJECT_ID, auth: auth }).firestore();
 };
 
 getAdminFirestore = () => {
-    return firebase.initializeAdminApp({ projectId: MY_PROJECT_ID }).firestore();
+    return firebase.initializeAdminApp({ projectId: TEST_PROJECT_ID }).firestore();
 };
 
 clearFirestoreData = async () => {
-    return firebase.clearFirestoreData({ projectId: MY_PROJECT_ID });
+    return firebase.clearFirestoreData({ projectId: TEST_PROJECT_ID });
 };
 
 describe('WPA BE Firestore Rules', () => {

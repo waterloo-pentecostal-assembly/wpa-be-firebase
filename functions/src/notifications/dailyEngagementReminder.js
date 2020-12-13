@@ -1,4 +1,6 @@
-const { firestore, functions, messaging, Timestamp } = require('../index');
+const { firestore, functions, messaging } = require('../index');
+const Timestamp = admin.firestore.Timestamp;
+
 
 // Docs: https://firebase.google.com/docs/reference/admin/node/admin.messaging.Messaging-1
 
@@ -22,6 +24,7 @@ dailyEngagementReminderNotification = functions
         const bibleSeriesSnapshot = await firestore
             .collection('bible_series')
             .where('start_date', '<=', Timestamp.fromMillis(todayMillis))
+            .where('is_active', '==', true)
             .orderBy('start_date', 'desc')
             .limit(1)
             .get();
@@ -52,7 +55,7 @@ dailyEngagementReminderNotification = functions
         // Send notification if engagement exists for today
         // Helpful: https://firebase.google.com/docs/cloud-messaging/concept-options
         //          https://github.com/firebase/functions-samples/blob/master/fcm-notifications/functions/index.js
-
+        // TODO: figure out payload format
         if (engagementExists) {
 
             const notificationPayload = {

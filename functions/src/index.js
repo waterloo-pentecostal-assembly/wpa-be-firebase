@@ -8,20 +8,10 @@ admin.initializeApp();
 const firestore = admin.firestore();
 const storage = admin.storage();
 const messaging = admin.messaging();
-const Timestamp = admin.firestore.Timestamp;
 
 module.exports = {
     firestore,
     storage,
     functions,
     messaging,
-    Timestamp,
 };
-
-/**
- * Features:
- *  - load data
- *  - manage users (See https://firebase.google.com/docs/auth/admin/manage-users#update_a_user managing users)
- *      - verify
- *      - disable
- */
