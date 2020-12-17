@@ -27,12 +27,28 @@ describe.only('utils', () => {
             expect(result).to.be.equals(undefined);
         });
 
+        it('should return value if deep key exists - value object', () => {
+            const testObj = {a: {b: {c: {d: 'hello'}}}};
+
+            const result = utils.deepGet(testObj, ['a', 'b', 'c']);
+
+            expect(result).to.deep.equals({d: 'hello'});
+        });
+
         it('should return default value if deep key does not exist', () => {
             const testObj = {a: {b: 'hello'}};
 
             const result = utils.deepGet(testObj, ['a', 'b', 'c'], 'default');
 
             expect(result).to.be.equals('default');
+        });
+
+        it('should return undefined value if deep key does not exist and default value not provided', () => {
+            const testObj = {a: {b: 'hello'}};
+
+            const result = utils.deepGet(testObj, ['a', 'b', 'c']);
+
+            expect(result).to.be.equals(undefined);
         });
     });
 });

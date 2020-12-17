@@ -1,7 +1,7 @@
 const { firestore, functions } = require('../index');
 
 // Update user snippet when user document is changed
-exports.updateUserSnippet = functions
+exports.updatePrayerRequestUserSnippet = functions
     .firestore
     .document('/users/{documentId}')
     .onUpdate(async (change, context) => {
@@ -16,9 +16,7 @@ exports.updateUserSnippet = functions
             'profile_photo_gs_location': newData['profile_photo_gs_location'],
         };
 
-        // --------------------------------------------------
-        // ----- Update user_snippet in prayer_requests -----
-        // --------------------------------------------------
+        // Update user_snippet in prayer_request
         // Get all the Prayer Requests for that user
         const prayerRequestSnapshot = await firestore
             .collection('prayer_requests')
