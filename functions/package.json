@@ -7,7 +7,7 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "test": "mocha test --recursive --exit"
+    "test": "WPA_BE_ENV=local_dev bash -c 'mocha test --recursive --exit'"
   },
   "engines": {
     "node": "12"
