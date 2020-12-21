@@ -1,6 +1,6 @@
 const firebase = require("@firebase/rules-unit-testing");
 
-const TEST_PROJECT_ID = 'test-wpa-be-app';
+const TEST_PROJECT_ID = 'wpa-be-app-dev';
 const myId = 'user_abc';
 const myEmail = 'user_abc@mail.com';
 const theirId = 'user_xyz';

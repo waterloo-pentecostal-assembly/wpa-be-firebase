@@ -7,7 +7,7 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "test": "mocha **/*.test.js --exit"
+    "test": "mocha test --recursive --exit"
   },
   "engines": {
     "node": "12"

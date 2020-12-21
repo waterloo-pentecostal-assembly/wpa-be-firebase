@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 const utils = require('../src/utils');
 
-describe.only('utils', () => {
+describe('utils', () => {
     describe('deepGet', () => {
         it('should return value if deep key exists - value string', () => {
             const testObj = {a: {b: {c: 'hello'}}};
