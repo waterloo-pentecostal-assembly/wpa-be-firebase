@@ -9,6 +9,8 @@ jobs:
     name: Run all tests using Firebase Emulator Suite
     runs-on: ubuntu-latest
     steps:
+      - env: 
+          SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.SERVICE_ACCOUNT_CREDENTIALS }}
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
@@ -20,4 +22,4 @@ jobs:
         working-directory: functions
       - name: Run all the tests
         working-directory: functions
-        run: firebase emulators:exec --project test-wpa-be-app 'npm test'
+        run: firebase emulators:exec --project wpa-be-app-dev 'npm test'
