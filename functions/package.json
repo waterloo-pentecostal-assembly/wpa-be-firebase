@@ -1,6 +1,6 @@
 {
   "name": "functions",
-  "description": "Cloud Functions for wpa-be",
+  "description": "Cloud Functions for WPA BE App",
   "scripts": {
     "lint": "eslint .",
     "serve": "firebase emulators:start --only functions",
