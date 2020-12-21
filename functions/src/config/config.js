@@ -13,10 +13,7 @@ exports.getConfig = (env) => {
 
         // Use environment variable is it exists
         if (process.env.SERVICE_ACCOUNT_CREDENTIALS) {
-            console.log('!!!!!!!! USING SERVICE_ACCOUNT_CREDENTIALS');
             serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_CREDENTIALS); 
-            console.log(serviceAccount);
-            console.log(typeof(serviceAccount));
         } else if (fs.existsSync(serviceAccountFile)) {
             serviceAccount = path.resolve(__dirname) + '/service-account-dev.json';
         } else {
