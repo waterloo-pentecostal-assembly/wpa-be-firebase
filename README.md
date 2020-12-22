@@ -28,6 +28,14 @@ To simplify usage and development, follow [these instructions](https://docs.micr
 3. Ensure that you are using Node 12 by running `node -v`. 
 3. Run `npm install`.
 
+## Setting up Access
+
+In order to run this application, you need to have appropriate access to the `wpa-be-app-dev` Firebase Project. Once this is configured, do the following. 
+
+1. Go to Service accounts [settings page](https://console.firebase.google.com/project/wpa-be-app-dev/settings/serviceaccounts/adminsdk) for the `wpa-be-app-dev` project. 
+2. Click `Generate new private key`.
+3. Rename the downloaded JSON to `service-account-dev.json` and move it to `wpa-be-firebase/functions/src/config`.
+
 ## Installing the Firebase CLI
 
 1. Follow [these instructions](https://firebase.google.com/docs/cli#install_the_firebase_cli) to install the CLI application on your machine. 
