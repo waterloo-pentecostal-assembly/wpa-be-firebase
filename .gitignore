@@ -67,3 +67,4 @@ node_modules/
 
 # Custom
 service-account*.json
+.DS_Store
