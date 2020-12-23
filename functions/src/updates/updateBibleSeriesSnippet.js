@@ -2,7 +2,7 @@ const { firestore, functions } = require('../index');
 const utils = require('../utils');
 
 // Update bible series snippet when series content is added
-exports.updateBibleSeriesSnippetOnWrite = functions
+exports.updateSeriesContentSnippetOnWrite = functions
     .firestore
     .document('/bible_series/{bibleSeriesId}/series_content/{seriesContentId}')
     .onCreate(async (snapshot, context) => {
@@ -103,7 +103,7 @@ exports.updateBibleSeriesSnippetOnWrite = functions
     });
 
 // Update bible series snippet when series content is updated
-exports.updateBibleSeriesSnippetOnUpdate = functions
+exports.updateSeriesContentSnippetOnUpdate = functions
     .firestore
     .document('/bible_series/{bibleSeriesId}/series_content/{seriesContentId}')
     .onUpdate(async (change, context) => {
@@ -283,7 +283,7 @@ exports.updateBibleSeriesSnippetOnUpdate = functions
     });
 
 // Update bible series snippet when series content is deleted
-exports.updateBibleSeriesSnippetOnDelete = functions
+exports.updateSeriesContentSnippetOnDelete = functions
     .firestore
     .document('/bible_series/{bibleSeriesId}/series_content/{seriesContentId}')
     .onDelete(async (snapshot, context) => {
