@@ -4,21 +4,19 @@ const Timestamp = admin.firestore.Timestamp;
 
 // Docs: https://firebase.google.com/docs/reference/admin/node/admin.messaging.Messaging-1
 
-const dateToYYYYMMDD = (date) => {
-    return `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${(date.getDate()).toString().padStart(2, '0')}`;
-};
 
-// exports.dailyEngagementReminderNotification = functions
-// WIP
-dailyEngagementReminderNotification = functions
+// Currently, this will send a notification to all users subscribed to 
+// the daily_engagement_reminder topic whether or not they already completed
+// the engagement by the time the notification is sent. 
+// To fix this, we would have to handle subscriptions outside of the topics
+// feature in FCM.
+exports.dailyEngagementReminderNotification = functions
     .pubsub
     .schedule("0 10 * * *")  // 10 a.m. everyday
     .timeZone("America/Toronto")
     .onRun(async (context) => {
-        // Look into luxon for handling time
         const today = new Date();
         const todayMillis = today.valueOf();
-        const todayYYYYMMDD = dateToYYYYMMDD(today);
 
         // Get the current Bible Series
         const bibleSeriesSnapshot = await firestore
@@ -43,25 +41,31 @@ dailyEngagementReminderNotification = functions
             const contentSnippet = bibleSeries['series_content_snippet'];
             if (Array.isArray(contentSnippet)) {
                 for (let element of contentSnippet) {
-                    const dateYYYYMMDD = dateToYYYYMMDD(element['date'].toDate());
-                    if (dateYYYYMMDD === todayYYYYMMDD) {
+                    const engagementDate = element['date'].toDate();
+                    if (engagementDate.toDateString() === today.toDateString()) {
                         engagementExists = true;
                         break;
                     }
                 }
             }
+        } else {
+            return;
         }
 
         // Send notification if engagement exists for today
         // Helpful: https://firebase.google.com/docs/cloud-messaging/concept-options
         //          https://github.com/firebase/functions-samples/blob/master/fcm-notifications/functions/index.js
-        // TODO: figure out payload format
+        // TODO: figure out payload format (https://wpa-tdd.atlassian.net/browse/WBA-107)
+        // This is tentative until confirmed in above Jira
         if (engagementExists) {
-
             const notificationPayload = {
                 notification: {
+                    title: 'Daily Engagement Reminder',
+                    body: `Don't forget to engage with ${bibleSeriesTitle} today!`
                 },
                 data: {
+                    notificationType: 'dailyEngagementReminder',
+                    bibleSeriesId
                 }
             };
 

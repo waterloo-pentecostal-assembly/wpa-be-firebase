@@ -5,7 +5,6 @@ exports.handleEngagementReminderSubscription = functions
     .firestore
     .document('/users/{userId}/notification_settings/{notificationSettingsId}')
     .onUpdate(async (change, context) => {
-        // might need to do on write and handle undefined
         // Get setting
         const newSetting = change.after.data()['daily_engagement_reminder'];
         const oldSetting = change.before.data()['daily_engagement_reminder'];

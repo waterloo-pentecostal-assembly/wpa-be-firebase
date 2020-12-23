@@ -1,5 +1,5 @@
-// exports.userSnippetUpdates = require('./src/updates/user_snippet_updates');
 exports.updates = require('./src/updates');
+exports.notifications = require('./src/notifications');
 
 // Useful links:
 // - https://firebase.google.com/docs/functions/get-started
