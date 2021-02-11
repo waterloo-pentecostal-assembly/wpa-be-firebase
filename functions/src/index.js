@@ -19,5 +19,6 @@ module.exports = {
     storage,
     functions,
     messaging,
+    admin,
 };
 

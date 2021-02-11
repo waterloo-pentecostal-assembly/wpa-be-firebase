@@ -1,4 +1,3 @@
 exports.userSnippetUpdates = require('./updateUserSnippet');
 exports.bibleSeriesSnippet = require('./updateBibleSeriesSnippet');
-exports.updateStreaks = require('./updateStreak');
-
+exports.updateProgress = require('./updateProgress');

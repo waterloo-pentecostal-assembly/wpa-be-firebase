@@ -37,7 +37,7 @@
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "is_active",
+                    "fieldPath": "is_visible",
                     "order": "ASCENDING"
                 },
                 {

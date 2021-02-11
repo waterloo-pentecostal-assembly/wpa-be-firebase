@@ -1,4 +1,4 @@
-const { firestore, functions, messaging } = require('../index');
+const { firestore, functions, messaging, admin } = require('../index');
 const Timestamp = admin.firestore.Timestamp;
 
 
@@ -16,12 +16,11 @@ exports.dailyEngagementReminderNotification = functions
     .timeZone("America/Toronto")
     .onRun(async (context) => {
         const today = new Date();
-        const todayMillis = today.valueOf();
 
         // Get the current Bible Series
         const bibleSeriesSnapshot = await firestore
             .collection('bible_series')
-            .where('start_date', '<=', Timestamp.fromMillis(todayMillis))
+            // .where('start_date', '<=', Timestamp.fromMillis(todayMillis))
             .where('is_active', '==', true)
             .orderBy('start_date', 'desc')
             .limit(1)
@@ -33,7 +32,7 @@ exports.dailyEngagementReminderNotification = functions
         let bibleSeriesId;
 
         if (!bibleSeriesSnapshot.empty) {
-            const bibleSeriesDoc = bibleSeriesSnapshot[0];
+            const bibleSeriesDoc = bibleSeriesSnapshot.docs[0];
             const bibleSeries = bibleSeriesDoc.data();
             bibleSeriesTitle = bibleSeries['title'];
             bibleSeriesId = bibleSeriesDoc.id;
