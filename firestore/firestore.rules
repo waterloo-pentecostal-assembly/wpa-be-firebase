@@ -26,7 +26,7 @@ service cloud.firestore {
         
     match /prayer_requests/{requestId} {
     	allow create: if request.auth.uid == request.resource.data.user_id;
-      allow delete, update: if request.auth.uid == resource.data.user_id;
+      allow delete, update: if request.auth.uid == resource.data.user_id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true;
       allow read: if request.auth != null;
     }
 
@@ -36,7 +36,7 @@ service cloud.firestore {
     }
     
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth.uid == userId;
+      allow read, write: if request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true;
     }
     
     match /achievements/{userId} {
