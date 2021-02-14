@@ -1,5 +1,4 @@
 const { firestore, functions, admin } = require('../index');
-const Timestamp = admin.firestore.Timestamp;
 
 // Update user snippet when user document is changed
 exports.updateProgress = functions
