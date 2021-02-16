@@ -368,15 +368,23 @@ describe('firestore rules', () => {
     });
 
     describe('completions collection', () => {
-        it('can read a completion document if signed in', async () => {
+        it('can read a completion document with same user_id as signed in user', async () => {
+            const admin = getAdminFirestore();
+            const completionId = "myUserCompletionId";
+            await admin.collection("completions").doc(completionId).set({"user_id": myId})
+             
             const db = getTestFirestore(myAuth);
-            const testQuery = db.collection("completions");
+            const testQuery = db.collection("completions").doc(completionId);
             await firebase.assertSucceeds(testQuery.get());
         });
 
-        it('can\'t read a completion document if not signed in', async () => {
-            const db = getTestFirestore();
-            const testQuery = db.collection("completions");
+        it('can\'t read a completion document if user_id not same as signed in user', async () => {
+            const admin = getAdminFirestore();
+            const completionId = "theirUserCompletionId";
+            await admin.collection("completions").doc(completionId).set({"user_id": theirId})
+             
+            const db = getTestFirestore(myAuth);
+            const testQuery = db.collection("completions").doc(completionId);
             await firebase.assertFails(testQuery.get());
         });
 
@@ -439,15 +447,27 @@ describe('firestore rules', () => {
         });
 
         describe('responses sub-collection', () => {
-            it('can read a responses document if signed in', async () => {
+            it('can read a responses document with same user_id as signed in user', async () => {
+                const admin = getAdminFirestore();
+                const completionId = "myUserCompletionId";
+                const responsesId = "myUserResponsesId";
+                await admin.collection("completions").doc(completionId).set({"user_id": myId});
+                await admin.collection("completions").doc(completionId).collection("responses").doc(responsesId).set({"user_id": myId});
+                
                 const db = getTestFirestore(myAuth);
-                const testQuery = db.collection("completions").doc("completions-id").collection("responses");
+                const testQuery = db.collection("completions").doc(completionId).collection("responses").doc(responsesId);
                 await firebase.assertSucceeds(testQuery.get());
             });
 
-            it('can\'t read a responses document if not signed in', async () => {
+            it('can\'t read a responses document if user_id not same as signed in user', async () => {
+                const admin = getAdminFirestore();
+                const completionId = "myUserCompletionId";
+                const responsesId = "myUserResponsesId";
+                await admin.collection("completions").doc(completionId).set({"user_id": theirId});
+                await admin.collection("completions").doc(completionId).collection("responses").doc(responsesId).set({"user_id": theirId});
+
                 const db = getTestFirestore();
-                const testQuery = db.collection("completions").doc("completions-id").collection("responses");
+                const testQuery = db.collection("completions").doc(completionId).collection("responses").doc(responsesId);
                 await firebase.assertFails(testQuery.get());
             });
 
