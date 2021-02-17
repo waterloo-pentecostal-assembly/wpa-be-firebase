@@ -21,7 +21,7 @@ service cloud.firestore {
     match /completions/{document=**} {
     	allow create: if request.auth.uid == request.resource.data.user_id;
       allow update, delete: if request.auth.uid == resource.data.user_id;
-      allow read: if request.auth != null;
+      allow read: if request.auth.uid == resource.data.user_id;
     }
         
     match /prayer_requests/{requestId} {
