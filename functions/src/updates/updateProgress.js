@@ -77,8 +77,23 @@ exports.updateProgress = functions
 
         const progressPercentage = Math.ceil(100 * (engagedSet.size / totalEngagementDays));
 
-        await firestore
+
+        const userAchievements = await firestore
+            .collection('achievements')
+            .where('user_id', '==', userId)
+            .get();
+
+        if(userAchievements.exists){
+             await firestore
             .collection('achievements')
             .doc(userId)
             .update({ 'series_progress': progressPercentage });
+        }else{
+            await firestore
+            .collection('achievements')
+            .doc(userId)
+            .set({ 'series_progress': progressPercentage });
+        }
+
+       
     });
