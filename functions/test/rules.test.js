@@ -371,7 +371,7 @@ describe('firestore rules', () => {
         it('can read a completion document with same user_id as signed in user', async () => {
             const admin = getAdminFirestore();
             const completionId = "myUserCompletionId";
-            await admin.collection("completions").doc(completionId).set({"user_id": myId})
+            await admin.collection("completions").doc(completionId).set({"user_id": myId});
              
             const db = getTestFirestore(myAuth);
             const testQuery = db.collection("completions").doc(completionId);
@@ -381,7 +381,7 @@ describe('firestore rules', () => {
         it('can\'t read a completion document if user_id not same as signed in user', async () => {
             const admin = getAdminFirestore();
             const completionId = "theirUserCompletionId";
-            await admin.collection("completions").doc(completionId).set({"user_id": theirId})
+            await admin.collection("completions").doc(completionId).set({"user_id": theirId});
              
             const db = getTestFirestore(myAuth);
             const testQuery = db.collection("completions").doc(completionId);
