@@ -5,7 +5,7 @@
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "is_safe",
+                    "fieldPath": "is_approved",
                     "order": "ASCENDING"
                 },
                 {
@@ -23,7 +23,21 @@
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "is_safe",
+                    "fieldPath": "is_approved",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "date",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "prayer_requests",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "user_id",
                     "order": "ASCENDING"
                 },
                 {
@@ -38,6 +52,20 @@
             "fields": [
                 {
                     "fieldPath": "is_visible",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "start_date",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "bible_series",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "is_active",
                     "order": "ASCENDING"
                 },
                 {

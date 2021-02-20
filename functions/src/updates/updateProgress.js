@@ -55,6 +55,7 @@ exports.updateProgress = functions
             .collection('completions')
             .where('series_id', '==', seriesId)
             .where('user_id', '==', userId)
+            .where('is_draft', '==', false)
             .get();
 
         const seriesSnippet = bibleSeriesData.series_content_snippet;

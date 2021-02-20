@@ -13,8 +13,15 @@ exports.updatePrayerRequestUserSnippet = functions
         const userSnippet = {
             'first_name': newData['first_name'],
             'last_name': newData['last_name'],
-            'profile_photo_gs_location': newData['profile_photo_gs_location'],
         };
+
+        // Remove profile photo if it was deleted
+        if (newData['profile_photo_gs_location']) {
+            const thumbLoc = newData['profile_photo_gs_location']
+            .replace('profile_photo', 'profile_photo/thumbs')
+            .replace('image', 'image_200x200');
+            userSnippet['profile_photo_gs_location'] = thumbLoc;
+        }
 
         // Update user_snippet in prayer_request
         // Get all the Prayer Requests for that user

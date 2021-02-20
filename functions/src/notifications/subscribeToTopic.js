@@ -1,7 +1,7 @@
 const { firestore, functions, messaging } = require('../index');
 
 // Subscribe to or unsubscribe from daily_engagement_reminder topic when switch is toggled 
-exports.handleEngagementReminderSubscription = functions
+exports.engagementSub = functions
     .firestore
     .document('/users/{userId}/notification_settings/{notificationSettingsId}')
     .onUpdate(async (change, context) => {

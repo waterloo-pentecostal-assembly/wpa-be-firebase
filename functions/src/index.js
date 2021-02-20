@@ -4,7 +4,8 @@ const functions = require('firebase-functions');
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
 
-const env = process.env.WPA_BE_ENV || 'local_dev';
+firebaseConfig = functions.config();
+const env = firebaseConfig.app.env;
 
 const config = require("./config/config").getConfig(env);
 
