@@ -16,11 +16,8 @@ exports.updatePrayerRequestUserSnippet = functions
         };
 
         // Remove profile photo if it was deleted
-        if (newData['profile_photo_gs_location']) {
-            const thumbLoc = newData['profile_photo_gs_location']
-            .replace('profile_photo', 'profile_photo/thumbs')
-            .replace('image', 'image_200x200');
-            userSnippet['profile_photo_gs_location'] = thumbLoc;
+        if (newData['thumbnail']) {
+            userSnippet['thumbnail'] = newData['profile_photo'];
         }
 
         // Update user_snippet in prayer_request
