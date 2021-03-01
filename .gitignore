@@ -67,5 +67,6 @@ node_modules/
 
 # Custom
 service-account*.json
+client-config*.json
 .DS_Store
 .vscode

@@ -26,8 +26,11 @@ service cloud.firestore {
         
     match /prayer_requests/{requestId} {
     	allow create: if request.auth.uid == request.resource.data.user_id;
-      allow delete, update: if request.auth.uid == resource.data.user_id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true;
+      allow delete: if request.auth.uid == resource.data.user_id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true;
       allow read: if request.auth != null;
+      allow update: if request.auth.uid == resource.data.user_id
+      || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true
+      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayed_by']));
     }
 
     match /notifications/{notificationId} {

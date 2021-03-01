@@ -35,6 +35,7 @@ In order to run this application, you need to have appropriate access to the `wp
 1. Go to Service accounts [settings page](https://console.firebase.google.com/project/wpa-be-app-dev/settings/serviceaccounts/adminsdk) for the `wpa-be-app-dev` project. 
 2. Click `Generate new private key`.
 3. Rename the downloaded JSON to `service-account-dev.json` and move it to `wpa-be-firebase/functions/src/config`.
+4. Copy the `firebaseConfig` from [here](https://console.firebase.google.com/u/0/project/wpa-be-app-dev/settings/general/web:NGJmODYyMTctODE2Yy00ZmE4LTliODAtZDc3Zjg2ODAyYzY2) and put it in a new file `wpa-be-firebase/functions/src/config/client-config-dev.json`. Reformat to proper json. 
 
 ## Installing the Firebase CLI
 
