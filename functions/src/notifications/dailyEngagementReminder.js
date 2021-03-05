@@ -30,13 +30,11 @@ exports.dailyEngagementReminderNotification = functions
         let engagementExists = false;
         let bibleSeriesTitle;
         let bibleSeriesId;
-
         if (!bibleSeriesSnapshot.empty) {
             const bibleSeriesDoc = bibleSeriesSnapshot.docs[0];
             const bibleSeries = bibleSeriesDoc.data();
             bibleSeriesTitle = bibleSeries['title'];
             bibleSeriesId = bibleSeriesDoc.id;
-
             const contentSnippet = bibleSeries['series_content_snippet'];
             if (Array.isArray(contentSnippet)) {
                 for (let element of contentSnippet) {
@@ -50,21 +48,16 @@ exports.dailyEngagementReminderNotification = functions
         } else {
             return;
         }
-
-        // Send notification if engagement exists for today
-        // Helpful: https://firebase.google.com/docs/cloud-messaging/concept-options
-        //          https://github.com/firebase/functions-samples/blob/master/fcm-notifications/functions/index.js
-        // TODO: figure out payload format (https://wpa-tdd.atlassian.net/browse/WBA-107)
-        // This is tentative until confirmed in above Jira
         if (engagementExists) {
             const notificationPayload = {
                 notification: {
                     title: 'Daily Engagement Reminder',
-                    body: `Don't forget to engage with ${bibleSeriesTitle} today!`
+                    body: `Don't forget to engage with ${bibleSeriesTitle} today!`,
+                    clickAction: 'FLUTTER_NOTIFICATION_CLICK'
                 },
                 data: {
                     notificationType: 'dailyEngagementReminder',
-                    bibleSeriesId
+                    bibleSeriesId: bibleSeriesId,
                 }
             };
 
