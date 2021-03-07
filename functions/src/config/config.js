@@ -7,7 +7,7 @@ exports.getConfig = (env) => {
         let serviceAccount;
 
         const clientConfigFile = path.resolve(__dirname) + '/client-config-dev.json';
-        let clientConfig = JSON.parse(fs.readFileSync(clientConfigFile));
+        let clientConfig;
 
         // TODO: Use this once Dart auth package is updated to allow app
         // to point to local auth emulator
@@ -23,6 +23,14 @@ exports.getConfig = (env) => {
             throw new Error('Unable to find service account credentials');
         }
 
+        if (process.env.CLIENT_CONFIG_CREDENTIALS) {
+            clientConfig = JSON.parse(process.env.CLIENT_CONFIG_CREDENTIALS);
+        } else if (fs.existsSync(clientConfigFile)) {
+            clientConfig = JSON.parse(fs.readFileSync(clientConfigFile));
+        } else {
+            throw new Error('Unable to find client config credentials');
+        }
+
         return {
             databaseUrl: "https://wpa-be-app-dev.firebaseio.com",
             serviceAccount,
@@ -36,7 +44,7 @@ exports.getConfig = (env) => {
         let serviceAccount;
 
         const clientConfigFile = path.resolve(__dirname) + '/client-config-dev.json';
-        let clientConfig = JSON.parse(fs.readFileSync(clientConfigFile));
+        let clientConfig;
 
         // Use environment variable if it exists
         if (process.env.SERVICE_ACCOUNT_CREDENTIALS) {
@@ -45,6 +53,14 @@ exports.getConfig = (env) => {
             serviceAccount = path.resolve(__dirname) + '/service-account-dev.json';
         } else {
             throw new Error('Unable to find service account credentials');
+        }
+
+        if (process.env.CLIENT_CONFIG_CREDENTIALS) {
+            clientConfig = JSON.parse(process.env.CLIENT_CONFIG_CREDENTIALS);
+        } else if (fs.existsSync(clientConfigFile)) {
+            clientConfig = JSON.parse(fs.readFileSync(clientConfigFile));
+        } else {
+            throw new Error('Unable to find client config credentials');
         }
 
         return {

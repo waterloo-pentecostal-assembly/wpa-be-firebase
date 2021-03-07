@@ -26,3 +26,4 @@ jobs:
         run: firebase emulators:exec --project wpa-be-app-dev 'npm test'
         env: 
           SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.SERVICE_ACCOUNT_CREDENTIALS }}
+          CLIENT_CONFIG_CREDENTIALS: ${{ secrets.CLIENT_CONFIG_CREDENTIALS }}
