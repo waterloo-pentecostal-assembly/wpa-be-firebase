@@ -1,40 +1,56 @@
-const { firestore, functions, messaging, admin } = require('../index');
+const { firestore, functions, messaging } = require('../index');
 
-exports.prayerRequestPrayedNotification = functions
+exports.prayerRequestPrayed = functions
     .firestore
     .document('/prayer_requests/{documentId}')
-    .onUpdate(async (change, context) => {
+    .onUpdate(async (change) => {
         const pastValue = change.before.data();
         const newValue = change.after.data();
-    if((pastValue.prayed_by != null && newValue.prayed_by.length > pastValue.prayed_by.length) 
-        || (pastValue.prayed_by == null && newValue.prayed_by !=null)){
-            const deviceTokenSnapshot = await firestore
-                .collection('users')
-                .doc(newValue.user_id)
-                .collection('devices')
-                .get();
 
-            const deviceTokens = [];
-            if(!deviceTokenSnapshot.empty){
-                deviceTokenSnapshot.forEach((doc) => {
-                    deviceTokens.push(doc.id);
-                })
-            }
+        const prayedByBefore = Array.isArray(pastValue.prayed_by) || [];
+        const prayedByAfter = Array.isArray(newValue.prayed_by) || [];
 
-            const notificationPayload = {
-                notification: {
-                    title: 'Prayer Request',
-                    body: 'Your Prayer Request has been prayed by someone!',
-                    clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-                },
-                data: {
-                    notificationType: 'prayerRequestPrayed',
-                }
-            }
-
-            messaging.sendToDevice(deviceTokens, notificationPayload);
+        if (prayedByAfter.length <= prayedByBefore.length) {
+            return;
         }
+        const userId = newValue.user_id;
+        
+        // Check if user has prayer notifications turned on
+        const userNotificationSettingsSnapshot = await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notification_settings')
+        .get();
+        
+        const userNotificationSettings = userNotificationSettingsSnapshot.docs[0].data();
+
+        if (!userNotificationSettings.prayers) {
+            return;
+        }
+
+        const deviceTokenSnapshot = await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('devices')
+            .get();
+
+        const deviceTokens = [];
+        if (!deviceTokenSnapshot.empty) {
+            deviceTokenSnapshot.forEach((doc) => {
+                deviceTokens.push(doc.id);
+            });
+        }
+
+        const notificationPayload = {
+            notification: {
+                title: 'Prayer Request',
+                body: 'Someone prayed for your prayer request!',
+                clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+            },
+            data: {
+                notificationType: 'prayerRequestPrayed',
+            }
+        };
+        messaging.sendToDevice(deviceTokens, notificationPayload);
         return;
-    }
-    
-    );
+    });
