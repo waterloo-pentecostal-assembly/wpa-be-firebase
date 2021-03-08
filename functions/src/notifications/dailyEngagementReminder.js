@@ -28,7 +28,8 @@ exports.dailyEngagementReminder = functions
         }
 
         // Loop through all snapshots and check if engagement exists
-        const bibleSeries = bibleSeriesSnapshot.docs[0].data();
+        const bibleSeriesDoc = bibleSeriesSnapshot.docs[0];
+        const bibleSeries = bibleSeriesDoc.data();
         
         let engagementExists = false;
         const bibleSeriesTitle = bibleSeries['title'];
