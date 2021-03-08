@@ -43,8 +43,8 @@ exports.prayerRequestPrayed = functions
 
         const notificationPayload = {
             notification: {
-                title: 'Prayer Request',
-                body: 'Someone prayed for your prayer request!',
+                title: 'Someone prayed for you!',
+                body: `Prayer Request: ${newValue.request}`,
                 clickAction: 'FLUTTER_NOTIFICATION_CLICK'
             },
             data: {
