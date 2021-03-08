@@ -4,10 +4,10 @@ const { firestore, functions, messaging } = require('../index');
 exports.engagementSub = functions
     .firestore
     .document('/users/{userId}/notification_settings/{notificationSettingsId}')
-    .onUpdate(async (change, context) => {
+    .onWrite(async (change, context) => {
         // Get setting
-        const newSetting = change.after.data()['daily_engagement_reminder'];
-        const oldSetting = change.before.data()['daily_engagement_reminder'];
+        const newSetting = change.after.exists ? change.after.data()['daily_engagement_reminder'] : false;
+        const oldSetting = change.before.exists ? change.before.data()['daily_engagement_reminder'] : false;
 
         // Handle subscription if daily_engagement_reminder was changed
         if (oldSetting !== newSetting) {
