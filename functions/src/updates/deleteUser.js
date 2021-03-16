@@ -5,11 +5,11 @@ exports.deleteUser = functions
     .document('/users/{documentId}')
     .onDelete(async (snapshot, context) => {
         const deletedUserId = snapshot.id;
-        // auth.deleteUser(deletedUserId).then(() => {
-        //     console.log('Successfully deleted User');
-        // }).catch((e) => {
-        //     console.log(e);
-        // });
+        auth.deleteUser(deletedUserId).then(() => {
+            console.log('Successfully deleted User');
+        }).catch((e) => {
+            console.log(e);
+        });
         
         //Deleting user completions
         firestore.collection('completions').where('user_id', '==', deletedUserId).get()
