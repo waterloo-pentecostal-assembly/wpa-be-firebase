@@ -78,7 +78,7 @@ exports.updateProgress = functions
 
         const progressPercentage = Math.ceil(100 * (engagedSet.size / totalEngagementDays));
 
-        if(progressPercentage == 0){
+        if(progressPercentage === 0){
             await firestore
                 .collection('achievements')
                 .doc(userId)

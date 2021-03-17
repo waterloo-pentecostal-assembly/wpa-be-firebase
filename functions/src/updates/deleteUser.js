@@ -5,35 +5,30 @@ exports.deleteUser = functions
     .document('/users/{documentId}')
     .onDelete(async (snapshot, context) => {
         const deletedUserId = snapshot.id;
-        auth.deleteUser(deletedUserId).then(() => {
-            console.log('Successfully deleted User');
-        }).catch((e) => {
-            console.log(e);
-        });
+        await auth.deleteUser(deletedUserId);
         
+        var batch = firestore.batch();
+
         //Deleting user completions
-        firestore.collection('completions').where('user_id', '==', deletedUserId).get()
-            .then(function(querySnapshot) {
-                var batch = firestore.batch();
-
-                querySnapshot.forEach(function(doc){
-                    batch.delete(doc.ref);
-                })
-
-                return batch.commit();
-            });
+        const completionsSnapshot = await firestore
+            .collection('completions')
+            .where('user_id', '==', deletedUserId)
+            .get();
+           
+        completionsSnapshot.forEach(function(doc){
+            batch.delete(doc.ref);
+        });
         
         //Deleting user prayer requests
-        firestore.collection('prayer_requests').where('user_id', '==', deletedUserId).get()
-        .then(function(querySnapshot) {
-            var batch = firestore.batch();
-
-            querySnapshot.forEach(function(doc){
-                batch.delete(doc.ref);
-            })
-
-            return batch.commit();
+        const prayerRequestCollection = await firestore.collection('prayer_requests')
+            .where('user_id', '==', deletedUserId)
+            .get();
+        
+        prayerRequestCollection.forEach(function(doc){
+            batch.delete(doc.ref);
         });
+
+        batch.commit();
 
         const bucket = storage.bucket();
         bucket.deleteFiles({
@@ -42,4 +37,4 @@ exports.deleteUser = functions
         bucket.deleteFiles({
             prefix: 'responses/${deletedUserId}/'
         });
-    })
+    });
