@@ -28,6 +28,8 @@ exports.engagementSub = functions
                     // doc IDs are the device tokens 
                     deviceTokens.push(doc.id);
                 });
+            } else {
+                return;
             }
 
             if (newSetting) {
@@ -39,3 +41,4 @@ exports.engagementSub = functions
             }
         }
     });
+    
