@@ -10,7 +10,10 @@ const env = firebaseConfig.app.env;
 
 const config = require("./config/config").getConfig(env);
 
-admin.initializeApp({ credential: admin.credential.cert(config.serviceAccount) });
+admin.initializeApp({ 
+    credential: admin.credential.cert(config.serviceAccount),
+    storageBucket: "wpa-be-app-dev.appspot.com" 
+});
 client.initializeApp(config.firebaseClientConfig);
 
 const firestore = admin.firestore();
