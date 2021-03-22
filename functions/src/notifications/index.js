@@ -2,4 +2,6 @@
 exports.subscribeToTopic = require('./subscribeToTopic');
 exports.dailyEngagementReminder = require('./dailyEngagementReminder');
 exports.prayerRequestPrayed = require('./prayerRequestPrayed');
+exports.logOutUnsubscribeToTopic = require('./logOutUnsubscribeToTopic');
 exports.newDeviceEngagementSub = require('./newDeviceSubscribetoTopic');
+
