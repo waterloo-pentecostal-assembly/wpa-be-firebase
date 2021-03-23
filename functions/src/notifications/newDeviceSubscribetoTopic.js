@@ -12,11 +12,19 @@ exports.newDeviceEngagementSub = functions
             .doc(userId)
             .collection('notification_settings')
             .get();
+
+        const userSnapshot = await firestore
+            .collection('users')
+            .doc(userId)
+            .get();
         if(!notificationSettingSnapshot.empty){
             const notificationSettings = notificationSettingSnapshot.docs[0].data();
             if(notificationSettings.daily_engagement_reminder){
                 await messaging.subscribeToTopic(deviceToken, 'daily_engagement_reminder');
             }
+        }
+        if(userSnapshot.data().is_admin){
+            await messaging.subscribeToTopic(deviceToken, 'user_signup_notifications');
         }
         return 0;
     });
