@@ -8,7 +8,7 @@ exports.sendVerificationEmail = functions
         const pastData = change.before.data();
         
         //check up in place to prevent error occuring when user is assigned addmin role
-        if(newData['is_verified'] != pastData['is_verified']){
+        if(newData['is_verified'] !== pastData['is_verified']){
             const { email } = newData;
 
             if (newData['is_verified']) {
