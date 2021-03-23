@@ -5,7 +5,6 @@ exports.logOutUnsubscribeToTopic = functions
     .document('/users/{userId}/devices/{devicesId}')
     .onDelete(async (snapshot, context) => {
         const deviceToken = snapshot.id;
-        console.log(deviceToken);
         await messaging.unsubscribeFromTopic(deviceToken, 'daily_engagement_reminder');
         const userSnapshot = await firestore.collection('users').doc(context.params.userId).get();
         if(userSnapshot.data().is_admin){
