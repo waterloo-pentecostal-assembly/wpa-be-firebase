@@ -8,11 +8,10 @@ const client = require('firebase');
 firebaseConfig = functions.config();
 const env = firebaseConfig.app.env;
 
-const config = require("./config/config").getConfig(env);
+const config = require("./config/config").getConfig('prod');
 
 admin.initializeApp({ 
-    credential: admin.credential.cert(config.serviceAccount),
-    storageBucket: "wpa-be-app.appspot.com" 
+    credential: admin.credential.cert(config.serviceAccount)
 });
 client.initializeApp(config.firebaseClientConfig);
 
