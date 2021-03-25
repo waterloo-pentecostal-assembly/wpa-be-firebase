@@ -30,7 +30,8 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow update: if request.auth.uid == resource.data.user_id
       || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true
-      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayed_by']));
+      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayed_by']))
+      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reported_by', 'is_approved']));
     }
 
     match /notifications/{notificationId} {
@@ -45,6 +46,11 @@ service cloud.firestore {
     match /achievements/{userId} {
     	allow write: if false;
       allow read: if request.auth.uid == userId;
+    }
+
+    match /links/{documentId}{
+      allow read: if true;
+      allow write: if false;
     }
   }
 }
