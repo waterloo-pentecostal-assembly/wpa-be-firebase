@@ -8,10 +8,11 @@ const client = require('firebase');
 firebaseConfig = functions.config();
 const env = firebaseConfig.app.env;
 
-const config = require("./config/config").getConfig(env);
+const config = require("./config/config").getConfig('prod');
 
 admin.initializeApp({ 
-    credential: admin.credential.cert(config.serviceAccount)
+    credential: admin.credential.cert(config.serviceAccount),
+    storageBucket: "wpa-be-app.appspot.com"
 });
 
 client.initializeApp(config.firebaseClientConfig);
@@ -28,6 +29,6 @@ module.exports = {
     messaging,
     admin,
     auth,
-    client,
+    client
 };
 
