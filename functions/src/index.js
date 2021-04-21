@@ -8,7 +8,7 @@ const client = require('firebase');
 firebaseConfig = functions.config();
 const env = firebaseConfig.app.env;
 
-const config = require("./config/config").getConfig('prod');
+const config = require("./config/config").getConfig(env);
 
 admin.initializeApp({ 
     credential: admin.credential.cert(config.serviceAccount),
