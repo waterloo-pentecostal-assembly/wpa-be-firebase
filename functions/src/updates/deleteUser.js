@@ -1,4 +1,4 @@
-const { firestore, functions, auth, storage} = require('../index');
+const { firestore, functions, auth, storage, storageBucket} = require('../index');
 
 exports.deleteUser = functions
     .firestore
@@ -30,10 +30,10 @@ exports.deleteUser = functions
 
         batch.commit();
 
-        await storage.bucket('wpa-be-app.appspot.com').deleteFiles({
+        await storage.bucket(storageBucket).deleteFiles({
             prefix: `responses/${deletedUserId}/`
         });
-        await storage.bucket('wpa-be-app.appspot.com').deleteFiles({
+        await storage.bucket(storageBucket).deleteFiles({
             prefix: `users/${deletedUserId}/`
         });
        

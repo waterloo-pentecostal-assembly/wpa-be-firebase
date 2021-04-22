@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 exports.getConfig = (env) => {
+
     if (env === 'local_dev') {
         const serviceAccountFile = path.resolve(__dirname) + '/service-account-dev.json';
         let serviceAccount;
@@ -31,10 +32,13 @@ exports.getConfig = (env) => {
             throw new Error('Unable to find client config credentials');
         }
 
+        const storageBucket = "";
+
         return {
             databaseUrl: "https://wpa-be-app-dev.firebaseio.com",
             serviceAccount,
-            firebaseClientConfig: clientConfig
+            firebaseClientConfig: clientConfig,
+            storageBucket: storageBucket
         };
     }
     else if (env === 'dev') {
@@ -63,10 +67,13 @@ exports.getConfig = (env) => {
             throw new Error('Unable to find client config credentials');
         }
 
+        const storageBucket = "wpa-be-app-dev.appspot.com";
+
         return {
             databaseUrl: "https://wpa-be-app-dev.firebaseio.com",
             serviceAccount,
-            firebaseClientConfig: clientConfig
+            firebaseClientConfig: clientConfig,
+            storageBucket: storageBucket
         };
     } else if (env === 'prod') {
         delete process.env.FIRESTORE_EMULATOR_HOST;
@@ -76,12 +83,16 @@ exports.getConfig = (env) => {
         const clientConfigFile = path.resolve(__dirname) + '/client-config.json';
         let clientConfig = JSON.parse(fs.readFileSync(clientConfigFile));
 
+        const storageBucket = "wpa-be-app.appspot.com";
+
         return {
             databaseUrl: "https://wpa-be-app.firebaseio.com",
             serviceAccount: path.resolve(__dirname) + '/service-account.json',
-            firebaseClientConfig: clientConfig
+            firebaseClientConfig: clientConfig,
+            storageBucket: storageBucket
         };
     } else {
         throw new Error(`invalid env: ${env}`);
     }
+    
 };
