@@ -1,4 +1,4 @@
-const { firestore, functions, admin, auth, storage } = require('../index');
+const { firestore, functions, auth, storage, storageBucket} = require('../index');
 
 exports.deleteUser = functions
     .firestore
@@ -30,11 +30,11 @@ exports.deleteUser = functions
 
         batch.commit();
 
-        const bucket = storage.bucket();
-        bucket.deleteFiles({
-            prefix: 'users/${deletedUserId}/'
+        await storage.bucket(storageBucket).deleteFiles({
+            prefix: `responses/${deletedUserId}/`
         });
-        bucket.deleteFiles({
-            prefix: 'responses/${deletedUserId}/'
+        await storage.bucket(storageBucket).deleteFiles({
+            prefix: `users/${deletedUserId}/`
         });
+       
     });

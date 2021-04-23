@@ -11,7 +11,8 @@ const env = firebaseConfig.app.env;
 const config = require("./config/config").getConfig(env);
 
 admin.initializeApp({ 
-    credential: admin.credential.cert(config.serviceAccount)
+    credential: admin.credential.cert(config.serviceAccount),
+    storageBucket: config.storageBucket
 });
 
 client.initializeApp(config.firebaseClientConfig);
@@ -20,6 +21,7 @@ const firestore = admin.firestore();
 const storage = admin.storage();
 const messaging = admin.messaging();
 const auth = admin.auth();
+const storageBucket = config.storageBucket;
 
 module.exports = {
     firestore,
@@ -29,5 +31,6 @@ module.exports = {
     admin,
     auth,
     client,
+    storageBucket
 };
 
