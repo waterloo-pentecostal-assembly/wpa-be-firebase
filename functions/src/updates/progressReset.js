@@ -22,7 +22,7 @@ exports.progressReset = functions
                 .get();
 
             bibleSeriesSnapshot.forEach(async (doc) => {
-                if(doc.id !== bibleSeriesSnapshot){
+                if(doc.id !== bibleSeriesId){
                     await firestore.collection('bible_series').doc(doc.id).update({'is_active': false});
                 }
             });

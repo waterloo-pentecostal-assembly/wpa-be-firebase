@@ -15,7 +15,7 @@ exports.deleteUser = functions
             .where('user_id', '==', deletedUserId)
             .get();
            
-        completionsSnapshot.forEach(function(doc){
+        completionsSnapshot.forEach((doc) => {
             batch.delete(doc.ref);
         });
         
@@ -24,7 +24,7 @@ exports.deleteUser = functions
             .where('user_id', '==', deletedUserId)
             .get();
         
-        prayerRequestCollection.forEach(function(doc){
+        prayerRequestCollection.forEach((doc) => {
             batch.delete(doc.ref);
         });
 
