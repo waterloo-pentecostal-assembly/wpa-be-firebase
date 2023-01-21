@@ -25,6 +25,7 @@ exports.newDeviceEngagementSub = functions
         }
         if(userSnapshot.data().is_admin){
             await messaging.subscribeToTopic(deviceToken, 'user_signup_notifications');
+            await messaging.subscribeToTopic(deviceToken, 'user_delete_request');
         }
         return 0;
     });

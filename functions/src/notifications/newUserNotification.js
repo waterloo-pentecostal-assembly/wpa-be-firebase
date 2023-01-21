@@ -14,6 +14,6 @@ exports.newUserNotification = functions
                 notificationType: 'userSignUp',
             }
         };
-        messaging.sendToTopic('user_signup_notifications', notificationPayload);
+        await messaging.sendToTopic('user_signup_notifications', notificationPayload);
     });
     

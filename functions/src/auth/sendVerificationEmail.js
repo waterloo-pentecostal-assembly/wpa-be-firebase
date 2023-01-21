@@ -22,5 +22,4 @@ exports.sendVerificationEmail = functions
                 }
             }
         }
-
     });

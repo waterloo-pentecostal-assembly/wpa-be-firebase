@@ -8,6 +8,7 @@ exports.logOutUnsubscribeToTopic = functions
         const deviceToken = snapshot.id;
         await messaging.unsubscribeFromTopic(deviceToken, 'daily_engagement_reminder');
         await messaging.unsubscribeFromTopic(deviceToken, 'user_signup_notifications');
+        await messaging.unsubscribeFromTopic(deviceToken, 'user_delete_request');
         return 0;
     });
     

@@ -30,6 +30,7 @@ exports.deleteUser = functions
 
         batch.commit();
 
+        // Delete stored files
         await storage.bucket(storageBucket).deleteFiles({
             prefix: `responses/${deletedUserId}/`
         });

@@ -24,10 +24,11 @@ exports.adminUserSub = functions
             }
             if(newValue.is_admin === true){
                 await messaging.subscribeToTopic(deviceTokens, 'user_signup_notifications');
+                await messaging.subscribeToTopic(deviceTokens, 'user_delete_request');
             }else{
                 await messaging.unsubscribeFromTopic(deviceTokens, 'user_signup_notifications');
+                await messaging.unsubscribeFromTopic(deviceTokens, 'user_delete_request');
             }
-            
         }
     });
     

@@ -59,6 +59,6 @@ exports.dailyEngagementReminder = functions
                 }
             };
 
-            messaging.sendToTopic('daily_engagement_reminder', notificationPayload);
+            await messaging.sendToTopic('daily_engagement_reminder', notificationPayload);
         }
     });
