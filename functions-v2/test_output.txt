@@ -1,0 +1,15 @@
+
+> functions@ test /Users/jramsamooj/development/wpa/wpa-be-firebase/functions-v2
+> mocha test --recursive --exit
+
+
+ Exception during run: ReferenceError: EventTarget is not defined
+    at file:///Users/jramsamooj/development/wpa/wpa-be-firebase/functions-v2/node_modules/chai/index.js:1544:14
+    at ModuleJob.run (internal/modules/esm/module_job.js:145:37)
+    at async Loader.import (internal/modules/esm/loader.js:182:24)
+    at async formattedImport (/Users/jramsamooj/development/wpa/wpa-be-firebase/functions-v2/node_modules/mocha/lib/nodejs/esm-utils.js:9:14)
+    at async Object.exports.requireOrImport (/Users/jramsamooj/development/wpa/wpa-be-firebase/functions-v2/node_modules/mocha/lib/nodejs/esm-utils.js:42:28)
+    at async Object.exports.loadFilesAsync (/Users/jramsamooj/development/wpa/wpa-be-firebase/functions-v2/node_modules/mocha/lib/nodejs/esm-utils.js:100:20)
+    at async singleRun (/Users/jramsamooj/development/wpa/wpa-be-firebase/functions-v2/node_modules/mocha/lib/cli/run-helpers.js:162:3)
+    at async Object.exports.handler (/Users/jramsamooj/development/wpa/wpa-be-firebase/functions-v2/node_modules/mocha/lib/cli/run.js:375:5)
+npm ERR! Test failed.  See above for more details.

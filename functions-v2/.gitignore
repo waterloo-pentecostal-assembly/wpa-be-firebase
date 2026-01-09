@@ -1,0 +1,20 @@
+# Compiled JavaScript files
+# Keep source files
+*.js.map
+*.d.ts
+
+# Firebase
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Node
+node_modules/
+npm-debug.log
+
+# Mac
+.DS_Store
+
+# Env
+.env*
+! .env.example

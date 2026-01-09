@@ -1,0 +1,54 @@
+{
+    "root": true,
+    "env": {
+        "es6": true,
+        "node": true,
+        "mocha": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "google"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module"
+    },
+    "rules": {
+        "quotes": [
+            "error",
+            "single",
+            {
+                "allowTemplateLiterals": true
+            }
+        ],
+        "indent": [
+            "error",
+            4
+        ],
+        "object-curly-spacing": [
+            "error",
+            "always"
+        ],
+        "max-len": [
+            "off"
+        ],
+        "valid-jsdoc": [
+            "off"
+        ],
+        "require-jsdoc": [
+            "off"
+        ],
+        "comma-dangle": [
+            "off"
+        ],
+        "camelcase": [
+            "off"
+        ],
+        "new-cap": [
+            "off"
+        ],
+        "no-tabs": [
+            "off"
+        ]
+    }
+}
