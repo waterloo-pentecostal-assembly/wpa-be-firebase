@@ -1,4 +1,5 @@
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
+import * as logger from 'firebase-functions/logger';
 import { firestore } from '../firebase.js';
 import { deepGet } from '../utils.js';
 
@@ -8,25 +9,33 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
     // entry in the bible series snippet
     // update start date and end date
 
+    logger.info('updateSeriesContentSnippetOnWrite triggered');
+
     // Get new data added
     const seriesContentData = event.data.data();
+    logger.info('seriesContentData:', JSON.stringify(seriesContentData));
 
     // If date not in data, return
     if (!seriesContentData || seriesContentData.date === undefined) {
+        logger.info('Date is undefined or data is missing. Exiting.');
         return;
     }
 
     // Get seriesContentId
     const seriesContentId = event.params.seriesContentId;
+    logger.info('seriesContentId:', seriesContentId);
 
     // Get bibleSeriesId
     const bibleSeriesId = event.params.bibleSeriesId;
+    logger.info('bibleSeriesId:', bibleSeriesId);
 
     // Get date
     const seriesContentDate = seriesContentData.date;
+    logger.info('seriesContentDate:', JSON.stringify(seriesContentDate));
 
     // Get content type
     const seriesContentType = seriesContentData['content_type'];
+    logger.info('seriesContentType:', seriesContentType);
 
     // Get bibleSeries data
     const bibleSeriesRef = await firestore
@@ -34,14 +43,18 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
         .doc(bibleSeriesId)
         .get();
 
+    logger.info('bibleSeriesRef exists:', bibleSeriesRef.exists);
+
     if (!bibleSeriesRef.exists) return;
 
     const bibleSeriesData = bibleSeriesRef.data();
+    logger.info('bibleSeriesData before update:', JSON.stringify(bibleSeriesData));
 
     // Add snippet data
     let seriesContentSnippet;
 
     if (bibleSeriesData['series_content_snippet'] === undefined) {
+        logger.info('series_content_snippet is undefined. Creating new snippet array.');
         seriesContentSnippet = [{
             'content_types': [
                 {
@@ -56,11 +69,13 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
         bibleSeriesData['start_date'] = seriesContentDate;
         bibleSeriesData['end_date'] = seriesContentDate;
     } else {
+        logger.info('series_content_snippet exists. Updating.');
         seriesContentSnippet = bibleSeriesData['series_content_snippet'];
         let dateExist = false;
         for (const element of seriesContentSnippet) {
             // Updated _seconds to seconds for v2 SDK compatibility
             if (element.date.seconds === seriesContentDate.seconds) {
+                logger.info('Date exists in snippet. Adding content to existing date entry.');
                 element['content_types'].push({
                     'content_type': seriesContentType,
                     'content_id': seriesContentId
@@ -70,6 +85,7 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
             }
         }
         if (!dateExist) {
+            logger.info('Date does not exist in snippet. Adding new date entry.');
             seriesContentSnippet.push({
                 'content_types': [
                     {
@@ -85,21 +101,29 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
         const currentStartDate = bibleSeriesData['start_date'];
         const currentEndDate = bibleSeriesData['end_date'];
 
+        logger.info('Checking start/end dates. Current start:', currentStartDate?.seconds, 'Current end:', currentEndDate?.seconds, 'New date:', seriesContentDate.seconds);
+
         if (seriesContentDate.seconds < currentStartDate.seconds) {
+            logger.info('New date is before current start date. Updating start date.');
             bibleSeriesData['start_date'] = seriesContentDate;
         }
 
         if (seriesContentDate.seconds > currentEndDate.seconds) {
+            logger.info('New date is after current end date. Updating end date.');
             bibleSeriesData['end_date'] = seriesContentDate;
         }
     }
 
     bibleSeriesData['series_content_snippet'] = seriesContentSnippet;
 
+    logger.info('Updating bibleSeriesData with new snippet.');
+
     await firestore
         .collection('bible_series')
         .doc(bibleSeriesId)
         .set(bibleSeriesData);
+
+    logger.info('Update complete.');
 });
 
 

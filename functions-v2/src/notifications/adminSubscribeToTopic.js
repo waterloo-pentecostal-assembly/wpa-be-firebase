@@ -29,9 +29,13 @@ export const adminUserSub = onDocumentUpdated('/users/{userId}', async (event) =
         if (newValue.is_admin === true) {
             await messaging.subscribeToTopic(deviceTokens, 'user_signup_notifications');
             await messaging.subscribeToTopic(deviceTokens, 'user_delete_request');
+            await messaging.subscribeToTopic(deviceTokens, 'new_testimony_for_approval');
+            await messaging.subscribeToTopic(deviceTokens, 'new_prayer_request_for_approval');
         } else {
             await messaging.unsubscribeFromTopic(deviceTokens, 'user_signup_notifications');
             await messaging.unsubscribeFromTopic(deviceTokens, 'user_delete_request');
+            await messaging.unsubscribeFromTopic(deviceTokens, 'new_testimony_for_approval');
+            await messaging.unsubscribeFromTopic(deviceTokens, 'new_prayer_request_for_approval');
         }
     }
 });

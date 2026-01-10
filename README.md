@@ -55,3 +55,38 @@ In order to run this application, you need to have appropriate access to the `wp
 2. `cd` into `wpa-be-firebase/functions`.
 3. Run `npm test`.
 
+
+## Deployment
+
+There are two environments: `dev` (`wpa-be-app-dev`) and `prod` (`wpa-be-app`).
+
+### Switching Environments
+
+To switch to the **dev** environment:
+```bash
+firebase use wpa-be-app-dev
+```
+
+To switch to the **prod** environment:
+```bash
+firebase use wpa-be-app
+```
+
+### Deploying Functions
+
+Make sure you are in the root directory (`/Users/jramsamooj/development/wpa/wpa-be-firebase`) before running these commands.
+
+**Deploy all functions:**
+```bash
+firebase deploy --only functions
+```
+
+**Deploy a single function:**
+To deploy only a specific function (e.g., `updateSeriesContentSnippetOnWrite`), allow for faster updates:
+```bash
+firebase deploy --only functions:updateSeriesContentSnippetOnWrite
+```
+
+The code automatically detects the environment and loads the appropriate configuration (`dev` or `prod`) based on the Firebase project currently in use.
+
+**Note:** The `firebase.json` file in the root directory is configured to point to the `functions-v2` directory (`"source": "functions-v2"`). This ensures that running `firebase deploy` deploys the new v2 functions.

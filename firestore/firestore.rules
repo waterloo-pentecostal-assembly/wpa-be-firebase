@@ -33,6 +33,16 @@ service cloud.firestore {
       || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayed_by']))
       || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reported_by', 'is_approved']));
     }
+    
+    match /testimonies/{requestId} {
+    	allow create: if request.auth.uid == request.resource.data.user_id;
+      allow delete: if request.auth.uid == resource.data.user_id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true;
+      allow read: if request.auth != null;
+      allow update: if request.auth.uid == resource.data.user_id
+      || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.is_admin == true
+      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['praised_by']))
+      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reported_by', 'is_approved']));
+    }
 
     match /notifications/{notificationId} {
     	allow write: if false;
@@ -52,10 +62,20 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
-
-    match /account_deletion_requests/{documentId} {
-      allow read: if false;
+    
+    match /forums/{forumId}{
+      allow read: if true;
       allow write: if true;
+    }
+    
+  	match /forums/{forumId}/threads/{threadId}{
+      allow read: if true;
+      allow write: if true;
+    }
+    
+  	match /forums/{forumId}/threads/{threadId}/comments/{commentId}{
+      allow read: if true;
+      allow write: if get(/databases/$(database)/documents/forums/$(forumId)/threads/$(threadId)).data.is_frozen == false;
     }
   }
 }

@@ -16,8 +16,21 @@ import { getConfig } from './config/config.js';
 // Warning: `functions.config()` is available in v2 but discouraged.
 // Let's assume we use an environment variable 'APP_ENV' for v2.
 
-const env = process.env.APP_ENV || 'local_dev';
-// NOTE: We might need to set this env var in .env files or deploy command.
+const project = process.env.GCLOUD_PROJECT;
+let env = process.env.APP_ENV;
+
+if (!env) {
+    if (project === 'wpa-be-app-dev') {
+        env = 'dev';
+    } else if (project === 'wpa-be-app') {
+        env = 'prod';
+    } else {
+        env = 'local_dev';
+    }
+}
+
+// Log the detected environment for debugging
+console.log(`Detected environment: ${env} (Project: ${project})`);
 
 const config = getConfig(env);
 
