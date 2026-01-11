@@ -10,7 +10,7 @@ export * from './newTestimony.js';
 export * from './newForumThread.js';
 export * from './newForumComment.js';
 export * from './forumCommentLike.js';
-export * from './forumCommentReply.js';
+
 export * from './testimonyPraised.js';
 export * from './newTestimonyForApproval.js';
 export * from './newPrayerRequestForApproval.js';

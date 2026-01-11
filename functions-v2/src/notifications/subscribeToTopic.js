@@ -51,41 +51,42 @@ export const engagementSub = onDocumentWritten('/users/{userId}/notification_set
             }
         }
     }
-    // Check for changes in threads_followed
-    const oldThreads = Array.isArray(oldData.threads_followed) ? oldData.threads_followed : [];
-    const newThreads = Array.isArray(newData.threads_followed) ? newData.threads_followed : [];
 
-    const addedThreads = newThreads.filter((x) => !oldThreads.includes(x));
-    const removedThreads = oldThreads.filter((x) => !newThreads.includes(x));
+    // // Check for changes in threads_followed
+    // const oldThreads = Array.isArray(oldData.threads_followed) ? oldData.threads_followed : [];
+    // const newThreads = Array.isArray(newData.threads_followed) ? newData.threads_followed : [];
 
-    if (addedThreads.length > 0 || removedThreads.length > 0) {
-        // Get device tokens if not already fetched
-        if (deviceTokens === null) {
-            const deviceTokensSnapshot = await firestore
-                .collection('users')
-                .doc(userId)
-                .collection('devices')
-                .get();
+    // const addedThreads = newThreads.filter((x) => !oldThreads.includes(x));
+    // const removedThreads = oldThreads.filter((x) => !newThreads.includes(x));
 
-            deviceTokens = [];
-            if (!deviceTokensSnapshot.empty) {
-                deviceTokensSnapshot.forEach((doc) => {
-                    deviceTokens.push(doc.id);
-                });
-            }
-        }
+    // if (addedThreads.length > 0 || removedThreads.length > 0) {
+    //     // Get device tokens if not already fetched
+    //     if (deviceTokens === null) {
+    //         const deviceTokensSnapshot = await firestore
+    //             .collection('users')
+    //             .doc(userId)
+    //             .collection('devices')
+    //             .get();
 
-        if (deviceTokens.length > 0) {
-            if (addedThreads.length > 0) {
-                for (const threadId of addedThreads) {
-                    await messaging.subscribeToTopic(deviceTokens, threadId);
-                }
-            }
-            if (removedThreads.length > 0) {
-                for (const threadId of removedThreads) {
-                    await messaging.unsubscribeFromTopic(deviceTokens, threadId);
-                }
-            }
-        }
-    }
+    //         deviceTokens = [];
+    //         if (!deviceTokensSnapshot.empty) {
+    //             deviceTokensSnapshot.forEach((doc) => {
+    //                 deviceTokens.push(doc.id);
+    //             });
+    //         }
+    //     }
+
+    //     if (deviceTokens.length > 0) {
+    //         if (addedThreads.length > 0) {
+    //             for (const threadId of addedThreads) {
+    //                 await messaging.subscribeToTopic(deviceTokens, threadId);
+    //             }
+    //         }
+    //         if (removedThreads.length > 0) {
+    //             for (const threadId of removedThreads) {
+    //                 await messaging.unsubscribeFromTopic(deviceTokens, threadId);
+    //             }
+    //         }
+    //     }
+    // }
 });
