@@ -17,7 +17,7 @@ export const newForumComment = onDocumentCreated('/forums/{forumId}/threads/{thr
 
     const { forumId, threadId, commentId } = event.params;
     const authorId = data.author_id;
-    const parentId = data.parent_comment_id;
+    const parentId = data.parent_id;
     const commentBody = data.body || 'New comment.';
     // Truncate body text
     const bodyPreview = commentBody.length > 50 ? `${commentBody.substring(0, 47)}...` : commentBody;
