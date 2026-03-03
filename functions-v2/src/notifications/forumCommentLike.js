@@ -26,9 +26,17 @@ export const forumCommentLiked = onDocumentUpdated('/forums/{forumId}/threads/{t
         return;
     }
 
+    // Find the user who liked the comment
+    const newLikerId = likedByAfter.find((id) => !likedByBefore.includes(id));
+
     const userId = newValue.author_id;
     if (!userId) {
         logger.warn('No userId associated with comment, exiting');
+        return;
+    }
+
+    if (newLikerId === userId) {
+        logger.info('User liked their own comment, exiting', { userId });
         return;
     }
 
