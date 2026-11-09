@@ -29,11 +29,8 @@ export const updatePrayerRequestUserSnippet = onDocumentUpdated('/users/{documen
     if (!prayerRequestSnapshot.empty) {
         const batch = firestore.batch();
         prayerRequestSnapshot.forEach((doc) => {
-            // Get current data
-            const ref = firestore.collection('prayer_requests').doc(doc.id);
-            // Update user snippet
             // Using update inside batch is better than get+set
-            batch.update(ref, { 'user_snippet': userSnippet });
+            batch.update(doc.ref, { 'user_snippet': userSnippet });
         });
         await batch.commit();
     }

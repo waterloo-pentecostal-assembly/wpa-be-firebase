@@ -1,5 +1,6 @@
 import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { firestore, messaging } from '../firebase.js';
+import { getActiveBibleSeries, sendToTopic } from '../helpers.js';
+import { buildNotification } from '../utils.js';
 
 // Docs: https://firebase.google.com/docs/reference/admin/node/admin.messaging.Messaging-1
 
@@ -11,66 +12,30 @@ import { firestore, messaging } from '../firebase.js';
 export const dailyEngagementReminder = onSchedule({
     schedule: '0 10 * * *', // 10 a.m. everyday
     timeZone: 'America/Toronto'
-}, async (event) => {
-    const today = new Date();
+}, async () => {
+    const today = new Date().toDateString();
 
     // Get the current Bible Series
-    const bibleSeriesSnapshot = await firestore
-        .collection('bible_series')
-        .where('is_active', '==', true)
-        .orderBy('start_date', 'desc')
-        .limit(1)
-        .get();
+    const bibleSeriesDoc = await getActiveBibleSeries();
+    if (!bibleSeriesDoc) return;
 
-
-    if (bibleSeriesSnapshot.empty) {
-        return;
-    }
-
-    // Loop through all snapshots and check if engagement exists
-    const bibleSeriesDoc = bibleSeriesSnapshot.docs[0];
     const bibleSeries = bibleSeriesDoc.data();
-
-    let engagementExists = false;
-    const bibleSeriesTitle = bibleSeries['title'];
-    const bibleSeriesId = bibleSeriesDoc.id;
     const contentSnippet = bibleSeries['series_content_snippet'];
 
-    if (Array.isArray(contentSnippet)) {
-        for (const element of contentSnippet) {
-            // Check if element.date is Timestamp or has toDate
-            const engagementDate = element['date'].toDate ? element['date'].toDate() : new Date(element['date'].seconds * 1000);
-            if (engagementDate.toDateString() === today.toDateString()) {
-                engagementExists = true;
-                break;
-            }
-        }
-    }
+    // Check if an engagement is scheduled for today
+    const engagementExists = Array.isArray(contentSnippet) && contentSnippet.some((element) => {
+        // Check if element.date is Timestamp or has toDate
+        const engagementDate = element['date'].toDate ? element['date'].toDate() : new Date(element['date'].seconds * 1000);
+        return engagementDate.toDateString() === today;
+    });
 
     if (engagementExists) {
-        const notificationPayload = {
-            notification: {
-                title: 'Daily Engagement Reminder',
-                body: `Don't forget to engage with ${bibleSeriesTitle} today!`,
-                // clickAction: 'FLUTTER_NOTIFICATION_CLICK' // Deprecated/Legacy, used in AndroidConfig or WebPushConfig
-            },
-            data: {
-                notificationType: 'dailyEngagementReminder',
-                bibleSeriesId: bibleSeriesId,
-                click_action: 'FLUTTER_NOTIFICATION_CLICK' // Moving to data for safety or AndroidConfig
-            }
-            // Add Android-specific config if needed for click_action support in new API
-        };
-
-        await messaging.send({
-            topic: 'daily_engagement_reminder',
-            notification: notificationPayload.notification,
-            data: notificationPayload.data,
-            android: {
-                notification: {
-                    clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-                }
-            }
-        });
+        await sendToTopic(buildNotification({
+            title: 'Daily Engagement Reminder',
+            body: `Don't forget to engage with ${bibleSeries['title']} today!`,
+            notificationType: 'dailyEngagementReminder',
+            data: { bibleSeriesId: bibleSeriesDoc.id },
+            topic: 'daily_engagement_reminder'
+        }));
     }
 });

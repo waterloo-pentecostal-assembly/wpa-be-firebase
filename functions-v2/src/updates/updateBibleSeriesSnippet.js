@@ -3,6 +3,18 @@ import * as logger from 'firebase-functions/logger';
 import { firestore } from '../firebase.js';
 import { deepGet } from '../utils.js';
 
+const bibleSeriesRef = (bibleSeriesId) => firestore.collection('bible_series').doc(bibleSeriesId);
+
+// Snippet entry for one piece of series content
+const contentEntry = (contentId, contentType) => ({
+    'content_type': contentType,
+    'content_id': contentId
+});
+
+// Snippet content_types with the given content removed
+const withoutContent = (contentTypes, contentId) =>
+    contentTypes.filter((contentType) => contentType['content_id'] !== contentId);
+
 // Update bible series snippet when series content is added
 export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_series/{bibleSeriesId}/series_content/{seriesContentId}', async (event) => {
     // if new content created, then create a new
@@ -38,16 +50,13 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
     logger.info('seriesContentType:', seriesContentType);
 
     // Get bibleSeries data
-    const bibleSeriesRef = await firestore
-        .collection('bible_series')
-        .doc(bibleSeriesId)
-        .get();
+    const bibleSeriesSnapshot = await bibleSeriesRef(bibleSeriesId).get();
 
-    logger.info('bibleSeriesRef exists:', bibleSeriesRef.exists);
+    logger.info('bibleSeries exists:', bibleSeriesSnapshot.exists);
 
-    if (!bibleSeriesRef.exists) return;
+    if (!bibleSeriesSnapshot.exists) return;
 
-    const bibleSeriesData = bibleSeriesRef.data();
+    const bibleSeriesData = bibleSeriesSnapshot.data();
     logger.info('bibleSeriesData before update:', JSON.stringify(bibleSeriesData));
 
     // Add snippet data
@@ -56,12 +65,7 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
     if (bibleSeriesData['series_content_snippet'] === undefined) {
         logger.info('series_content_snippet is undefined. Creating new snippet array.');
         seriesContentSnippet = [{
-            'content_types': [
-                {
-                    'content_type': seriesContentType,
-                    'content_id': seriesContentId
-                }
-            ],
+            'content_types': [contentEntry(seriesContentId, seriesContentType)],
             'date': seriesContentDate
         }];
 
@@ -76,10 +80,7 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
             // Updated _seconds to seconds for v2 SDK compatibility
             if (element.date.seconds === seriesContentDate.seconds) {
                 logger.info('Date exists in snippet. Adding content to existing date entry.');
-                element['content_types'].push({
-                    'content_type': seriesContentType,
-                    'content_id': seriesContentId
-                });
+                element['content_types'].push(contentEntry(seriesContentId, seriesContentType));
                 dateExist = true;
                 break;
             }
@@ -87,12 +88,7 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
         if (!dateExist) {
             logger.info('Date does not exist in snippet. Adding new date entry.');
             seriesContentSnippet.push({
-                'content_types': [
-                    {
-                        'content_type': seriesContentType,
-                        'content_id': seriesContentId
-                    }
-                ],
+                'content_types': [contentEntry(seriesContentId, seriesContentType)],
                 'date': seriesContentDate
             });
         }
@@ -118,10 +114,7 @@ export const updateSeriesContentSnippetOnWrite = onDocumentCreated('/bible_serie
 
     logger.info('Updating bibleSeriesData with new snippet.');
 
-    await firestore
-        .collection('bible_series')
-        .doc(bibleSeriesId)
-        .set(bibleSeriesData);
+    await bibleSeriesRef(bibleSeriesId).set(bibleSeriesData);
 
     logger.info('Update complete.');
 });
@@ -153,8 +146,8 @@ export const updateSeriesContentSnippetOnUpdate = onDocumentUpdated('/bible_seri
 
     const contentTypeChanged = oldContentType !== newContentType;
 
-    // Don't process if new date or new content_type is undefined
-    if (newContentType === undefined || newDate === undefined) {
+    // Don't process if new content_type is undefined or new date is missing/null
+    if (newContentType === undefined || newDate === undefined || newDate === null) {
         return;
     }
 
@@ -167,14 +160,11 @@ export const updateSeriesContentSnippetOnUpdate = onDocumentUpdated('/bible_seri
         const seriesContentId = event.params.seriesContentId;
 
         // Get existing snippet
-        const bibleSeriesRef = await firestore
-            .collection('bible_series')
-            .doc(bibleSeriesId)
-            .get();
+        const bibleSeriesSnapshot = await bibleSeriesRef(bibleSeriesId).get();
 
-        if (!bibleSeriesRef.exists) return;
+        if (!bibleSeriesSnapshot.exists) return;
 
-        const bibleSeriesData = bibleSeriesRef.data();
+        const bibleSeriesData = bibleSeriesSnapshot.data();
         const oldContentSnippets = bibleSeriesData['series_content_snippet'];
         const newContentSnippet = [];
 
@@ -186,25 +176,12 @@ export const updateSeriesContentSnippetOnUpdate = onDocumentUpdated('/bible_seri
 
             for (const contentSnippet of oldContentSnippets) {
                 if (contentSnippet['date']['seconds'] === newDateMillis) {
-                    const updatedContentTypes = [];
-                    const date = newSeriesContentData['date'];
-
-                    // Loop through content types looking for seriesContentId
-                    for (const contentType of contentSnippet['content_types']) {
-                        if (!(contentType['content_id'] === seriesContentId)) {
-                            updatedContentTypes.push(contentType);
-                        }
-                    }
-
-                    // Add new content type
-                    updatedContentTypes.push({
-                        'content_id': seriesContentId,
-                        'content_type': newContentType,
-                    });
-
                     newContentSnippet.push({
-                        'date': date,
-                        'content_types': updatedContentTypes
+                        'date': newDate,
+                        'content_types': [
+                            ...withoutContent(contentSnippet['content_types'], seriesContentId),
+                            contentEntry(seriesContentId, newContentType)
+                        ]
                     });
                 } else {
                     newContentSnippet.push(contentSnippet);
@@ -225,14 +202,7 @@ export const updateSeriesContentSnippetOnUpdate = onDocumentUpdated('/bible_seri
 
             for (const contentSnippet of oldContentSnippets) {
                 if (contentSnippet['date']['seconds'] === oldDateMillis) {
-                    const updatedContentTypes = [];
-
-                    // Loop through content types looking for seriesContentId
-                    for (const contentType of contentSnippet['content_types']) {
-                        if (!(contentType['content_id'] === seriesContentId)) {
-                            updatedContentTypes.push(contentType);
-                        }
-                    }
+                    const updatedContentTypes = withoutContent(contentSnippet['content_types'], seriesContentId);
 
                     // Only add back the date if there are other snippets
                     if (updatedContentTypes.length > 0) {
@@ -244,27 +214,14 @@ export const updateSeriesContentSnippetOnUpdate = onDocumentUpdated('/bible_seri
                     }
                 } else if (contentSnippet['date']['seconds'] === newDateMillis) {
                     newDateExists = true;
-
-                    const updatedContentTypes = [];
-
-                    // Loop through content types looking for seriesContentId
-                    for (const contentType of contentSnippet['content_types']) {
-                        if (!(contentType['content_id'] === seriesContentId)) {
-                            updatedContentTypes.push(contentType);
-                        }
-                    }
-
-                    // Add new content type
-                    updatedContentTypes.push({
-                        'content_id': seriesContentId,
-                        'content_type': newContentType,
-                    });
-
                     dates.push(newDate);
 
                     newContentSnippet.push({
                         'date': newDate,
-                        'content_types': updatedContentTypes
+                        'content_types': [
+                            ...withoutContent(contentSnippet['content_types'], seriesContentId),
+                            contentEntry(seriesContentId, newContentType)
+                        ]
                     });
                 } else {
                     dates.push(contentSnippet['date']);
@@ -278,10 +235,7 @@ export const updateSeriesContentSnippetOnUpdate = onDocumentUpdated('/bible_seri
                 // Add new content type
                 newContentSnippet.push({
                     'date': newDate,
-                    'content_types': [{
-                        'content_id': seriesContentId,
-                        'content_type': newContentType,
-                    }]
+                    'content_types': [contentEntry(seriesContentId, newContentType)]
                 });
             }
 
@@ -293,10 +247,7 @@ export const updateSeriesContentSnippetOnUpdate = onDocumentUpdated('/bible_seri
 
         bibleSeriesData['series_content_snippet'] = newContentSnippet;
 
-        await firestore
-            .collection('bible_series')
-            .doc(bibleSeriesId)
-            .set(bibleSeriesData);
+        await bibleSeriesRef(bibleSeriesId).set(bibleSeriesData);
     }
 });
 

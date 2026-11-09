@@ -13,7 +13,7 @@ export const progressReset = onDocumentUpdated('/bible_series/{bibleSeriesId}', 
 
         const achievementUpdates = [];
         achievementsSnapshot.forEach((doc) => {
-            achievementUpdates.push(firestore.collection('achievements').doc(doc.id).update({ 'series_progress': 0 }));
+            achievementUpdates.push(doc.ref.update({ 'series_progress': 0 }));
         });
         await Promise.all(achievementUpdates);
 
@@ -24,7 +24,7 @@ export const progressReset = onDocumentUpdated('/bible_series/{bibleSeriesId}', 
         const seriesUpdates = [];
         bibleSeriesSnapshot.forEach((doc) => {
             if (doc.id !== bibleSeriesId) {
-                seriesUpdates.push(firestore.collection('bible_series').doc(doc.id).update({ 'is_active': false }));
+                seriesUpdates.push(doc.ref.update({ 'is_active': false }));
             }
         });
         await Promise.all(seriesUpdates);

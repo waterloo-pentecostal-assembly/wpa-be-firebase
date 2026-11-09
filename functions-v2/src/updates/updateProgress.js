@@ -1,47 +1,26 @@
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { firestore } from '../firebase.js';
+import { getActiveBibleSeries } from '../helpers.js';
 
 // Update user snippet when user document is changed
 export const updateProgress = onDocumentWritten('/completions/{documentId}', async (event) => {
-    let userId;
-    let seriesId;
+    // Use the deleted completion if it was removed, otherwise the new one
+    const deleted = !event.data.after.exists;
+    if (deleted && !event.data.before.exists) return; // Should not happen for onDelete/onWrite
 
-    // If completion was deleted
-    if (!event.data.after.exists) {
-        if (!event.data.before.exists) return; // Should not happen for onDelete/onWrite
-        userId = event.data.before.data().user_id;
-        seriesId = event.data.before.data().series_id;
-    } else {
-        const isDraft = event.data.after.data().is_draft || false;
-        if (isDraft) {
-            return;
-        }
-        userId = event.data.after.data().user_id;
-        seriesId = event.data.after.data().series_id;
-    }
-
-    // Get current bible series id
-    let bibleSeriesId;
-    let bibleSeriesData;
-
-    const bibleSeriesSnapshot = await firestore
-        .collection('bible_series')
-        .where('is_active', '==', true)
-        .orderBy('start_date', 'desc')
-        .limit(1)
-        .get();
-
-    if (!bibleSeriesSnapshot.empty) {
-        const bibleSeriesDoc = bibleSeriesSnapshot.docs[0];
-        bibleSeriesData = bibleSeriesDoc.data();
-        bibleSeriesId = bibleSeriesDoc.id;
-    } else {
+    const completion = (deleted ? event.data.before : event.data.after).data();
+    if (!deleted && completion.is_draft) {
         return;
     }
+    const userId = completion.user_id;
+    const seriesId = completion.series_id;
 
-    if (seriesId !== bibleSeriesId) {
+    // Get current bible series
+    const bibleSeriesDoc = await getActiveBibleSeries();
+    if (!bibleSeriesDoc || seriesId !== bibleSeriesDoc.id) {
         return;
     }
+    const bibleSeriesData = bibleSeriesDoc.data();
 
     // Get all completions for current bible series
     const allSeriesCompletions = await firestore

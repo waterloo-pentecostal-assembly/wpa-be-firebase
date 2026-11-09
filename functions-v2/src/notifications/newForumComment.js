@@ -1,13 +1,12 @@
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import * as logger from 'firebase-functions/logger';
-import { firestore, messaging } from '../firebase.js';
+import { firestore } from '../firebase.js';
+import { getDeviceTokens, getOptedInDeviceTokens, sendToDevices } from '../helpers.js';
+import { buildNotification, truncateText } from '../utils.js';
 
 export const newForumComment = onDocumentCreated('/forums/{forumId}/threads/{threadId}/comments/{commentId}', async (event) => {
-    logger.info('newForumComment triggered', {
-        forumId: event.params.forumId,
-        threadId: event.params.threadId,
-        commentId: event.params.commentId
-    });
+    const { forumId, threadId, commentId } = event.params;
+    logger.info('newForumComment triggered', { forumId, threadId, commentId });
 
     const data = event.data.data();
     if (!data) {
@@ -15,12 +14,10 @@ export const newForumComment = onDocumentCreated('/forums/{forumId}/threads/{thr
         return;
     }
 
-    const { forumId, threadId, commentId } = event.params;
     const authorId = data.author_id;
     const parentId = data.parent_id;
-    const commentBody = data.body || 'New comment.';
-    // Truncate body text
-    const bodyPreview = commentBody.length > 50 ? `${commentBody.substring(0, 47)}...` : commentBody;
+    const bodyPreview = truncateText(data.body, 50, 'New comment.');
+    const commentData = { threadId, forumId, commentId };
 
     try {
         if (parentId) {
@@ -42,8 +39,7 @@ export const newForumComment = onDocumentCreated('/forums/{forumId}/threads/{thr
                 return;
             }
 
-            const parentCommentData = parentCommentSnapshot.data();
-            const parentAuthorId = parentCommentData.author_id;
+            const parentAuthorId = parentCommentSnapshot.data().author_id;
 
             // Don't notify if replying to own comment
             if (parentAuthorId === authorId) {
@@ -51,66 +47,15 @@ export const newForumComment = onDocumentCreated('/forums/{forumId}/threads/{thr
                 return;
             }
 
-            // Check user settings
-            const userNotificationSettingsSnapshot = await firestore
-                .collection('users')
-                .doc(parentAuthorId)
-                .collection('notification_settings')
-                .get();
+            const deviceTokens = await getOptedInDeviceTokens(parentAuthorId, 'forum_comment_replies');
+            if (deviceTokens.length === 0) return;
 
-            if (userNotificationSettingsSnapshot.empty) {
-                logger.info('User has no notification settings, exiting', { parentAuthorId });
-                return;
-            }
-
-            const userNotificationSettings = userNotificationSettingsSnapshot.docs[0].data();
-            if (!userNotificationSettings.forum_comment_replies) {
-                logger.info('User has disabled forum_comment_replies notifications, exiting', { parentAuthorId });
-                return;
-            }
-
-            // Get device tokens
-            const deviceTokenSnapshot = await firestore
-                .collection('users')
-                .doc(parentAuthorId)
-                .collection('devices')
-                .get();
-
-            const deviceTokens = [];
-            if (!deviceTokenSnapshot.empty) {
-                deviceTokenSnapshot.forEach((doc) => {
-                    deviceTokens.push(doc.id);
-                });
-            }
-
-            if (deviceTokens.length === 0) {
-                logger.info('User has no device tokens, exiting', { parentAuthorId });
-                return;
-            }
-
-            const message = {
-                notification: {
-                    title: 'New reply to your comment',
-                    body: bodyPreview,
-                },
-                data: {
-                    notificationType: 'forumCommentReply',
-                    threadId: threadId,
-                    forumId: forumId,
-                    commentId: commentId,
-                    click_action: 'FLUTTER_NOTIFICATION_CLICK'
-                },
-                android: {
-                    notification: {
-                        clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-                    }
-                },
-                tokens: deviceTokens
-            };
-
-            logger.info('Sending forumCommentReply notification', { parentAuthorId, deviceTokenCount: deviceTokens.length });
-            const response = await messaging.sendEachForMulticast(message);
-            logger.info('Successfully sent reply notification', { successCount: response.successCount, failureCount: response.failureCount });
+            await sendToDevices(deviceTokens, buildNotification({
+                title: 'New reply to your comment',
+                body: bodyPreview,
+                notificationType: 'forumCommentReply',
+                data: commentData
+            }));
         } else {
             // --- HANDLE THREAD COMMENT ---
             logger.info('Handling as Thread Comment');
@@ -128,23 +73,15 @@ export const newForumComment = onDocumentCreated('/forums/{forumId}/threads/{thr
 
             const targetUserIds = [];
             settingsQuerySnapshot.forEach((doc) => {
-                // The parent of the notification_settings subcollection is the user document
                 // Path: users/{userId}/notification_settings/{settingId}
-                // doc.ref.parent = notification_settings collection
-                // doc.ref.parent.parent = user document
+                // doc.ref.parent.parent is the user document
                 const userDocRef = doc.ref.parent.parent;
                 if (userDocRef) {
                     const userId = userDocRef.id;
-                    const settings = doc.data();
 
-                    // conditions:
-                    // 1. Not the author
-                    // 2. forum_thread_comments setting is true (or undefined? assuming true if subscribed? implementation plan said check logic)
-                    // The 'threads_followed' implies intent, but 'forum_thread_comments' might be a master switch.
-                    // Let's allow if 'forum_thread_comments' is true or missing (backwards compat) - but strictly if we want to honor the switch we should check it.
-                    // User Request "update all users... forum_thread_comments set to true" implies we rely on it.
-
-                    if (userId !== authorId && (settings.forum_thread_comments === true)) {
+                    // Notify followers other than the author who have the
+                    // forum_thread_comments switch turned on.
+                    if (userId !== authorId && doc.data().forum_thread_comments === true) {
                         targetUserIds.push(userId);
                     }
                 }
@@ -157,47 +94,21 @@ export const newForumComment = onDocumentCreated('/forums/{forumId}/threads/{thr
                 return;
             }
 
-            // Fetch tokens for all targets
-            // We can do this in parallel
-            const tokenPromises = targetUserIds.map(async (uid) => {
-                const snap = await firestore.collection('users').doc(uid).collection('devices').get();
-                return snap.docs.map((d) => d.id);
-            });
+            // Fetch tokens for all targets in parallel
+            const tokensArrays = await Promise.all(targetUserIds.map(getDeviceTokens));
+            const uniqueTokens = [...new Set(tokensArrays.flat())];
 
-            const tokensArrays = await Promise.all(tokenPromises);
-            const allTokens = tokensArrays.flat(); // Flatten array of arrays
-
-            if (allTokens.length === 0) {
+            if (uniqueTokens.length === 0) {
                 logger.info('No device tokens found for target users');
                 return;
             }
 
-            // Remove duplicates just in case (though unlikely across users, but good practice)
-            const uniqueTokens = [...new Set(allTokens)];
-
-            const message = {
-                notification: {
-                    title: 'New Comment',
-                    body: bodyPreview,
-                },
-                data: {
-                    notificationType: 'newForumComment',
-                    threadId: threadId,
-                    commentId: commentId,
-                    forumId: forumId,
-                    click_action: 'FLUTTER_NOTIFICATION_CLICK'
-                },
-                android: {
-                    notification: {
-                        clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-                    }
-                },
-                tokens: uniqueTokens
-            };
-
-            logger.info('Sending newForumComment notification', { tokenCount: uniqueTokens.length });
-            const response = await messaging.sendEachForMulticast(message);
-            logger.info('Successfully sent comment notification', { successCount: response.successCount, failureCount: response.failureCount });
+            await sendToDevices(uniqueTokens, buildNotification({
+                title: 'New Comment',
+                body: bodyPreview,
+                notificationType: 'newForumComment',
+                data: commentData
+            }));
         }
     } catch (error) {
         logger.error('Error in newForumComment', error);

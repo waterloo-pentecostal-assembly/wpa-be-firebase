@@ -1,32 +1,21 @@
-import { onDocumentWritten } from 'firebase-functions/v2/firestore';
-import { messaging } from '../firebase.js';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import * as logger from 'firebase-functions/logger';
+import { sendToTopic } from '../helpers.js';
+import { buildNewForumThreadPayload } from '../utils.js';
 
-export const newForumThread = onDocumentWritten('/forums/{forumId}/threads/{threadId}', async (event) => {
-    const newData = event.data.after.data();
+// Notify users subscribed to the new_forum_thread topic when a thread is
+// created. Uses onDocumentCreated (not onDocumentWritten) so later thread
+// updates do not re-send a "New Thread" notification.
+export const newForumThread = onDocumentCreated('/forums/{forumId}/threads/{threadId}', async (event) => {
+    logger.info('newForumThread triggered', {
+        forumId: event.params.forumId,
+        threadId: event.params.threadId
+    });
 
-    // If deleted, return
-    if (!newData) return;
+    if (!event.data) {
+        logger.warn('newForumThread: missing event data, exiting');
+        return;
+    }
 
-    // Use default values if fields are missing.
-    const threadTitle = newData.title;
-    const bodyText = threadTitle.length > 50 ? `${threadTitle.substring(0, 47)}...` : threadTitle;
-
-    const notificationPayload = {
-        notification: {
-            title: 'New Thread',
-            body: bodyText,
-        },
-        data: {
-            notificationType: 'newForumThread',
-            click_action: 'FLUTTER_NOTIFICATION_CLICK'
-        },
-        android: {
-            notification: {
-                clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-            }
-        },
-        topic: 'new_forum_thread'
-    };
-
-    await messaging.send(notificationPayload);
+    await sendToTopic(buildNewForumThreadPayload(event.data.data(), event.params));
 });
