@@ -1,6 +1,6 @@
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { auth, clientAuth } from '../firebase.js';
-import { signInWithCustomToken, sendEmailVerification, signOut } from 'firebase/auth';
+import { signInWithCustomToken, sendEmailVerification, signOut } from '@firebase/auth';
 
 export const sendVerificationEmail = onDocumentUpdated('/users/{documentId}', async (event) => {
     const newData = event.data.after.data();

@@ -47,8 +47,8 @@ export const storageBucket = config.storageBucket;
 export const admin = app;
 
 // For client SDK (used in email verification)
-import { initializeApp as initClientApp } from 'firebase/app';
-import { getAuth as getClientAuth } from 'firebase/auth';
+import { initializeApp as initClientApp } from '@firebase/app';
+import { getAuth as getClientAuth } from '@firebase/auth';
 
 const clientApp = initClientApp(config.firebaseClientConfig);
 export const clientAuth = getClientAuth(clientApp);
