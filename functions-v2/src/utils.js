@@ -122,3 +122,10 @@ export const buildNewForumThreadPayload = (threadData, params = {}) => {
         topic: 'new_forum_thread'
     });
 };
+
+// Fields copied into prayer_requests.user_snippet. Only changes to these
+// require the snippet to be rewritten.
+export const USER_SNIPPET_FIELDS = ['first_name', 'last_name', 'thumbnail'];
+
+export const userSnippetChanged = (before = {}, after = {}) =>
+    USER_SNIPPET_FIELDS.some((field) => before?.[field] !== after?.[field]);

@@ -1,8 +1,14 @@
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { firestore } from '../firebase.js';
+import { userSnippetChanged } from '../utils.js';
 
 // Update user snippet when user document is changed
 export const updatePrayerRequestUserSnippet = onDocumentUpdated('/users/{documentId}', async (event) => {
+    // Skip writes that don't touch snippet fields (e.g. last_active, search_tokens)
+    if (!userSnippetChanged(event.data.before.data(), event.data.after.data())) {
+        return;
+    }
+
     // Get user data
     const newData = event.data.after.data();
     const userId = event.params.documentId;
