@@ -1,6 +1,6 @@
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { getActiveBibleSeries, sendToTopic } from '../helpers.js';
-import { buildNotification } from '../utils.js';
+import { APP_TIME_ZONE, buildNotification } from '../utils.js';
 
 // Docs: https://firebase.google.com/docs/reference/admin/node/admin.messaging.Messaging-1
 
@@ -11,7 +11,7 @@ import { buildNotification } from '../utils.js';
 // feature in FCM.
 export const dailyEngagementReminder = onSchedule({
     schedule: '0 10 * * *', // 10 a.m. everyday
-    timeZone: 'America/Toronto'
+    timeZone: APP_TIME_ZONE
 }, async () => {
     const today = new Date().toDateString();
 

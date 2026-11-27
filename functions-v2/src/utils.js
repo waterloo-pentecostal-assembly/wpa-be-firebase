@@ -129,3 +129,44 @@ export const USER_SNIPPET_FIELDS = ['first_name', 'last_name', 'thumbnail'];
 
 export const userSnippetChanged = (before = {}, after = {}) =>
     USER_SNIPPET_FIELDS.some((field) => before?.[field] !== after?.[field]);
+
+// Time zone the scheduled jobs run in (dailyEngagementReminder). Calendar-date
+// comparisons for notifications use it too.
+export const APP_TIME_ZONE = 'America/Toronto';
+
+// Whether a notification setting is on. Existing settings are opt-in (missing
+// means off). Settings added later pass defaultWhenMissing: true so users who
+// never saw the toggle still get them; only an explicit false opts out.
+export const settingEnabled = (settings, settingKey, defaultWhenMissing = false) => {
+    if (!settings) return false;
+    if (defaultWhenMissing) return settings[settingKey] !== false;
+    return !!settings[settingKey];
+};
+
+// FCM error codes meaning the token will never work again.
+const DEAD_TOKEN_CODES = new Set([
+    'messaging/registration-token-not-registered',
+    'messaging/invalid-registration-token'
+]);
+
+// Tokens from a multicast response that FCM reports as permanently invalid.
+// `tokens` must be in the same order as the request.
+export const deadTokens = (tokens, response) => {
+    if (!response || !Array.isArray(response.responses)) return [];
+    return response.responses.flatMap((result, index) =>
+        (!result.success && DEAD_TOKEN_CODES.has(result.error?.code) ? [tokens[index]] : []));
+};
+
+// Map with at most `limit` calls of `fn` in flight. Results keep input order.
+export const mapWithConcurrency = async (items, limit, fn) => {
+    const results = new Array(items.length);
+    let next = 0;
+    const worker = async () => {
+        while (next < items.length) {
+            const index = next++;
+            results[index] = await fn(items[index], index);
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+    return results;
+};

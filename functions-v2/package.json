@@ -7,7 +7,8 @@
         "shell": "firebase functions:shell",
         "start": "npm run shell",
         "deploy": "firebase deploy --only functions",
-        "test": "mocha test --recursive --exit"
+        "test": "mocha test --recursive --exit",
+        "test:integration": "firebase emulators:exec --project demo-wpa --only firestore --config ../firebase.json 'mocha test-integration --exit --timeout 30000'"
     },
     "engines": {
         "node": "24"
